@@ -26,21 +26,33 @@
     <script>
     var socket = io();
 
-    var name = $('#username').val();
-    $('#chatForm').submit(function(){
-      socket.emit('chat message', $('#m').val());
+    var nameDOM = $('#username');
+
+    $('#chatForm').submit(function(e){
+      e.preventDefault();
+      socket.emit('chat message', nameDOM.val(), $('#m').val());
       $('#m').val('');
       return false;
     });
 
-    $('#loginForm').submit(function(){
-      socket.emit('new user', name, function(data){
-        
+    $('#loginForm').submit(function(e){
+      e.preventDefault();
+      socket.emit('new user', nameDOM.val(), function(isName, data){
+        if(isName){
+          $('#login-window').hide();
+          $('#chat-window').show();
+
+          $.each(data, function(index){
+            $('#messages').append($('<li>').text(data[index].message + " by " + data[index].name));
+          });
+        }else{
+          // TODO: error handling
+        }
       });
     });
 
-    socket.on('chat message', function(msg){
-      $('#messages').append($('<li>').text(msg));
+    socket.on('chat message', function(name, msg){
+      $('#messages').append($('<li>').text(msg + " by " + name));
     });
   </script>
   </body>
