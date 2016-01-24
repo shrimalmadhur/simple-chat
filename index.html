@@ -9,7 +9,7 @@
   <body>
 
     <div id="login-window">
-      <h2>Enter your name</h2>
+      <h2 style="margin-left:40%">Enter your name</h2>
       <form action="" id="loginForm">
         <input id="username" autocomplete="off" />
         <button>Enter</button>
@@ -20,6 +20,7 @@
       <ul id="messages"></ul>
       <form action="" id="chatForm">
         <input id="m" autocomplete="off" /><button>Send</button>
+        <button id="leaveRoom">Leave</button>
       </form>
     </div>
 
@@ -30,10 +31,35 @@
 
     $('#chatForm').submit(function(e){
       e.preventDefault();
-      socket.emit('chat message', nameDOM.val(), $('#m').val());
+      var date = new Date();
+      socket.emit('chat message', nameDOM.val(), $('#m').val(), date);
       $('#m').val('');
       return false;
     });
+
+    $('button#leaveRoom').click(function() {
+        $('#chat-window').hide();
+        nameDOM.val('');
+        $('#login-window').show();
+
+    });
+    
+    /**
+    * Function to create chat div
+    **/
+    var creatChatDiv = function(name, message, date, current_user) {
+      var chatDiv = $('<div class="chat">');
+      chatDiv.append($('<div class="date">').text(date));
+      if(current_user == name){
+        chatDiv.append($('<div class="name">').text("me"));  
+      } else {
+        chatDiv.append($('<div class="name">').text(name));  
+      }
+      
+      chatDiv.append($('<div class="chat-message">').text(message));
+      
+      return chatDiv;
+    }
 
     $('#loginForm').submit(function(e){
       e.preventDefault();
@@ -43,17 +69,18 @@
           $('#chat-window').show();
 
           $.each(data, function(index){
-            $('#messages').append($('<li>').text(data[index].message + " by " + data[index].name));
+            console.log("date");
+            console.log(data[index].current_date);
+            $('#messages').append($('<li>').html(creatChatDiv(data[index].name, data[index].message, data[index].current_date, nameDOM.val())));
           });
-        }else{
-          // TODO: error handling
         }
       });
     });
 
-    socket.on('chat message', function(name, msg){
-      $('#messages').append($('<li>').text(msg + " by " + name));
+    socket.on('chat message', function(name, msg, date){
+      $('#messages').append($('<li>').html(creatChatDiv(name, msg, date, nameDOM.val())));
     });
+
   </script>
   </body>
 </html>

@@ -16,7 +16,7 @@ form {
 form input { 
 	border: 0; 
 	padding: 10px; 
-	width: 90%; 
+	width: 80%; 
 	margin-right: .5%; 
 }
 form button { 
@@ -28,10 +28,17 @@ form button {
 #messages { 
 	list-style-type: none; 
 	margin: 0; 
-	padding: 0; 
+	padding: 0;
+	position: absolute;
+    width: 100%;
+    overflow: auto;
+    height: 95%; 
 }
 #messages li { 
-	padding: 5px 10px; 
+	border: 1px solid gray;
+    border-radius: 5px;
+    margin: 10px 10px 15px 10px;
+    padding: 1em 0em 1em 0em;
 }
 #messages li:nth-child(odd) { 
 	background: #eee; 
@@ -39,4 +46,43 @@ form button {
 
 #chat-window {
 	display: none;
+}
+
+#login-window {
+	top: 40%;
+    position: absolute;
+    width: 100%;
+}
+
+div.chat {
+	padding: 4px 4px 4px 4px;
+}
+
+div.name {
+	color: black;
+    font-size: large;
+    font-family: sans-serif;
+    font-weight: bold;
+}
+
+div.date {
+	float: right;
+    position: relative;
+}
+
+div.chat-message {
+	padding-top: 6px;
+}
+
+input#username {
+	border: 1px solid black;
+}
+
+form#loginForm {
+	position: relative;
+    background: white;
+}
+
+form#loginForm input {
+	width: 90%;
 }

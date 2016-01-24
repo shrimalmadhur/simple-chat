@@ -2,37 +2,12 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var dateformat = require('dateformat');
 
-// --------------------------- DB ---------------------------//
 var fs = require("fs");
 var file = "test.db";
-var exists = fs.existsSync(file);
 var sqlite3 = require("sqlite3").verbose();
 
-
-// db.serialize(function() {
-//   if(!exists) {
-//     db.run("CREATE TABLE Stuff (name TEXT, message TEXT )");
-//   }
-  
-//         var stmt = db.prepare("INSERT INTO Stuff VALUES (?)");
-  
-// //Insert random data
-//   var rnd;
-//   for (var i = 0; i < 10; i++) {
-//     rnd = Math.floor(Math.random() * 10000000);
-//     stmt.run("Thing #" + rnd);
-//   }
-  
-// stmt.finalize();
-//   db.each("SELECT rowid AS id, thing FROM Stuff", function(err, row) {
-//     console.log(row.id + ": " + row.thing);
-//   });
-// });
-
-// db.close();
-
-// -------------------- DB -----------------------------//
 app.use(express.static(__dirname));
 
 app.get('/', function(req, res){
@@ -40,46 +15,43 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  socket.on('chat message', function(name, msg){
+  socket.on('chat message', function(name, msg, date){
     var db = new sqlite3.Database(file);
+    var newDate = dateformat(date, 'yyyy-mm-dd hh:MM:ss');
     db.serialize(function() {
-      if(!exists) {
-        db.run("CREATE TABLE Stuff (name TEXT, message TEXT )");
-      }
       
-      var stmt = db.prepare("INSERT INTO Stuff VALUES (? , ?)");
+      var stmt = db.prepare("INSERT INTO Stuff VALUES (? , ? , ?)");
       
-    //Insert random data
-      stmt.run(name, msg);
-            
+      console.log(newDate);
+      stmt.run(name, msg, newDate);
       stmt.finalize();
     });
 
     db.close();
-    io.emit('chat message', name, msg);
+    io.emit('chat message', name, msg, newDate);
   });
 
   socket.on('new user', function (name, callback){
+    var exists = fs.existsSync(file);
   	console.log(name + " connected");
     data = [];
     var db = new sqlite3.Database(file);
     db.serialize(function() {
       console.log("New user exists" + exists);
-      if(exists) {
-        db.all("SELECT name, message FROM Stuff", function(err, row) {
-          // var obj = {
-          //   "msg" : row.message,
-          //   "name" : row.name
-          // }
-          // data.push(obj);
-          callback(true, row);
-        });
-        console.log("data")
+      if(!exists) {
+        db.run("CREATE TABLE Stuff (name TEXT, message TEXT , current TEXT)");
       }
-      // callback(true, data);
+      db.all("SELECT name, message, datetime(current) as current_date FROM Stuff", function(err, row) {
+        if(row){
+          console.log(row);
+          callback(true, row);  
+        } else {
+          callback(true, []);
+        }
+        
+      });
     });    
     db.close();
-  	
   });
 
 });
